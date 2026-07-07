@@ -1,0 +1,31 @@
+baseURL = "https://go-proc.github.io/"
+title = "go-proc"
+disableKinds = ["taxonomy", "term", "RSS", "sitemap", "404"]
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[[params.phases]]
+  name = "supervisor · subreaper"
+  status = "ready"
+  blurb = "A PID-1 subreaper — `signal.Notify(SIGCHLD)` + non-blocking `Wait4(-1, WNOHANG)` — reaps every orphaned child the kernel reparents to the process, publishing a portable `Reaped{PID, ExitStatus, Signaled, Signal}` per collection. Linux-specific, behind a build tag, with a no-op stub so cross-platform builds stay green."
+[[params.phases]]
+  name = "supervisor · process supervision"
+  status = "ready"
+  blurb = "Drives a pluggable `Runtime` (an OCI runtime, a fork+exec launcher, a fake) over a `Spec` of `Proc`s: start each one, correlate reaper exits back to the owning process, and restart per `RestartPolicy` — `Never` / `OnFailure` / `Always`. `Stop` does SIGTERM → grace → SIGKILL."
+[[params.phases]]
+  name = "respawn · state machine"
+  status = "ready"
+  blurb = "A restart/reconcile machine fed `down` / `up` / `unhealthy` / `healthy` signals per named unit. Its heart is a pure `Decide(policy, history, attempt, signal, now) → Plan` function you can assert against a fixed clock; a concurrent per-unit `Reconciler` is the thin shell around it."
+[[params.phases]]
+  name = "respawn · anti-flap & anti-thrash"
+  status = "ready"
+  blurb = "A `grace_period` debounces transient flaps before reacting; `max_restarts` within a sliding `window` caps thrash and moves a hot unit to `cooldown`; `constant` or `exponential` backoff (capped at 5 min) paces each retry. An `unhealthy` liveness failure is recovered as stop-then-start."
+[[params.phases]]
+  name = "Pure Go · zero cgo · 6 arches"
+  status = "ready"
+  blurb = "Both libraries are `CGO_ENABLED=0`, dependency-free, race-tested, `gofmt` + `go vet` clean, and green across the six 64-bit Go targets — amd64, arm64, riscv64, loong64, ppc64le, s390x — at **100% test coverage**, error branches included."
+[[params.phases]]
+  name = "Generic seams"
+  status = "ready"
+  blurb = "No weft, no gRPC, no health-checker imports: a six-method `Runtime` interface, a two-method `Actions` interface, and local value types (`RespawnPolicy`, `SignalKind`) are the only coupling points — drop these into any init, agent, or workload manager."
